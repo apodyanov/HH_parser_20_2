@@ -15,8 +15,14 @@ def display_companies_and_vacancies(db_manager: DBManager) -> None:
         print("Нет данных о компаниях.")
         return
 
-    for item in results:
-        print(f"🏢 {item['company_name']}: {item['vacancy_count']} вакансий")
+    total_vacancies = 0
+    for idx, item in enumerate(results, 1):
+        print(f"{idx:2d}. 🏢 {item['company_name']:<20} - {item['vacancy_count']:3d} вакансий")
+        total_vacancies += item['vacancy_count']
+
+    print("-" * 60)
+    print(f"   Всего компаний: {len(results)}")
+    print(f"   Всего вакансий: {total_vacancies}")
 
 
 def display_all_vacancies(db_manager: DBManager) -> None:
@@ -31,27 +37,34 @@ def display_all_vacancies(db_manager: DBManager) -> None:
         print("Нет вакансий в базе данных.")
         return
 
+    print(f"Всего найдено вакансий: {len(results)}\n")
+
     for idx, vacancy in enumerate(results, 1):
-        print(f"\n{idx}. 📌 {vacancy['title']}")
-        print(f"   Компания: {vacancy['company_name']}")
+        print(f"{idx:2d}. 📌 {vacancy['title']}")
+        print(f"     Компания: {vacancy['company_name']}")
 
         if vacancy['salary_from'] or vacancy['salary_to']:
-            salary_str = "   Зарплата: "
+            salary_str = "     Зарплата: "
             if vacancy['salary_from']:
-                salary_str += f"от {vacancy['salary_from']}"
+                salary_str += f"от {vacancy['salary_from']:,}"
             if vacancy['salary_to']:
-                salary_str += f" до {vacancy['salary_to']}" if vacancy['salary_from'] else f"до {vacancy['salary_to']}"
+                salary_str += f" до {vacancy['salary_to']:,}" if vacancy[
+                    'salary_from'] else f"до {vacancy['salary_to']:,}"
             if vacancy['salary_currency']:
                 salary_str += f" {vacancy['salary_currency']}"
-            print(salary_str)
+            print(salary_str.replace(',', ' '))
         else:
-            print("   Зарплата: не указана")
+            print("     Зарплата: не указана")
 
-        print(f"   Ссылка: {vacancy['url']}")
+        print(f"     Ссылка: {vacancy['url']}")
 
-        if vacancy['requirement']:
-            requirement = vacancy['requirement'][:200]
-            print(f"   Требования: {requirement}...")
+        if vacancy.get('requirement'):
+            requirement = vacancy['requirement'][:150]
+            print(f"     Требования: {requirement}...")
+        print()
+
+        if idx % 10 == 0:  # Пауза после каждых 10 вакансий
+            input("   Нажмите Enter для продолжения...")
 
 
 def display_average_salary(db_manager: DBManager) -> None:

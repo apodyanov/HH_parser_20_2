@@ -1,7 +1,7 @@
 """Module for database management and queries."""
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from config import Config
 
 
@@ -84,24 +84,18 @@ class DBManager:
         Returns:
             True if insertion successful, False otherwise.
         """
-        salary = vacancy_data.get('salary', {})
-        salary_from = salary.get('from') if salary else None
-        salary_to = salary.get('to') if salary else None
-        salary_currency = salary.get('currency') if salary else None
-
         query = """
         INSERT INTO vacancies (
-            vacancy_id, vacancy_name, employer_id, 
+            vacancy_name, employer_id, 
             salary_from, salary_to, salary_currency, 
             vacancy_url, requirement, responsibility, published_at
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (vacancy_id) DO UPDATE SET
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (vacancy_url) DO UPDATE SET
             vacancy_name = EXCLUDED.vacancy_name,
             salary_from = EXCLUDED.salary_from,
             salary_to = EXCLUDED.salary_to,
             salary_currency = EXCLUDED.salary_currency,
-            vacancy_url = EXCLUDED.vacancy_url,
             requirement = EXCLUDED.requirement,
             responsibility = EXCLUDED.responsibility,
             published_at = EXCLUDED.published_at
@@ -111,26 +105,15 @@ class DBManager:
             conn = self._get_connection()
             cur = conn.cursor()
 
-            # Parse requirement and responsibility from snippet
-            requirement = vacancy_data.get('snippet', {}).get('requirement')
-            responsibility = vacancy_data.get('snippet', {}).get('responsibility')
-
-            # Clean HTML tags from text
-            if requirement:
-                requirement = requirement.replace('<highlighttext>', '').replace('</highlighttext>', '')
-            if responsibility:
-                responsibility = responsibility.replace('<highlighttext>', '').replace('</highlighttext>', '')
-
             cur.execute(query, (
-                vacancy_data.get('id'),
-                vacancy_data.get('name'),
+                vacancy_data.get('vacancy_name'),
                 employer_id,
-                salary_from,
-                salary_to,
-                salary_currency,
-                vacancy_data.get('alternate_url'),
-                requirement,
-                responsibility,
+                vacancy_data.get('salary_from'),
+                vacancy_data.get('salary_to'),
+                vacancy_data.get('salary_currency'),
+                vacancy_data.get('vacancy_url'),
+                vacancy_data.get('requirement'),
+                vacancy_data.get('responsibility'),
                 vacancy_data.get('published_at')
             ))
             conn.commit()
@@ -138,6 +121,7 @@ class DBManager:
             return True
         except psycopg2.Error as e:
             print(f"Error inserting vacancy: {e}")
+            conn.rollback()
             return False
 
     def get_companies_and_vacancies_count(self) -> List[Dict[str, Any]]:
@@ -163,7 +147,9 @@ class DBManager:
             cur.execute(query)
             results = cur.fetchall()
             cur.close()
-            return results
+
+            # Convert to regular dicts for display
+            return [dict(row) for row in results]
         except psycopg2.Error as e:
             print(f"Error getting companies and vacancies count: {e}")
             return []

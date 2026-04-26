@@ -2,7 +2,7 @@
 name = "hh-parser"
 version = "1.0.0"
 description = "Course work: HH.ru vacancies parser"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Andrey Podianov <podyanov82@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
