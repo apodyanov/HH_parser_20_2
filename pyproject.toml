@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "hh-parser"
+version = "1.0.0"
+description = "Course work: HH.ru vacancies parser"
+authors = ["Andrey Podianov <podyanov82@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+psycopg2-binary = "^2.9.9"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.0"
+flake8 = "^6.0"
+mypy = "^1.0"
+
+[tool.poetry.scripts]
+hh-parser = "main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
