@@ -5,26 +5,30 @@ from typing import List, Dict, Any, Optional
 
 class HHAPIClient:
     """
-    Клиент для API HH.ru.
+    Client for HH.ru API.
 
-    Предоставляет методы для получения данных о работодателях и вакансиях из API HH.ru.
+    Provides methods to fetch employer and vacancy data from HH.ru API.
     """
 
     BASE_URL: str = 'https://api.hh.ru'
 
     def __init__(self, timeout: int = 30) -> None:
         """
-        Инициализация API-клиента HH.ru.
+        Initialize HH.ru API client.
 
         Args:
             timeout: Request timeout in seconds.
         """
         self.timeout = timeout
         self.session = requests.Session()
+        # Добавляем User-Agent для идентификации клиента
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 HH-Parser/1.0 (course-work; contact: your-email@example.com)'
+        })
 
     def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Optional[Dict]:
         """
-        Выполнение HTTP-запроса к API HH.ru.
+        Make HTTP request to HH.ru API.
 
         Args:
             endpoint: API endpoint path.
@@ -72,7 +76,8 @@ class HHAPIClient:
             params = {
                 'employer_id': employer_id,
                 'per_page': per_page,
-                'page': page
+                'page': page,
+                'only_with_salary': False  # Получаем все вакансии, даже без зарплаты
             }
 
             data = self._make_request('vacancies', params)
@@ -90,7 +95,7 @@ class HHAPIClient:
         return all_vacancies
 
 
-# Предварительно определенные работодатели (ID с сайта hh.ru)
+# Predefined interesting employers (IDs from hh.ru)
 INTERESTING_EMPLOYERS: List[Dict[str, Any]] = [
     {'id': 1740, 'name': 'Яндекс'},
     {'id': 80, 'name': 'Альфа-Банк'},
